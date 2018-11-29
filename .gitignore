@@ -1,0 +1,6 @@
+build
+dif
+test
+.vscode
+*.o
+*.d

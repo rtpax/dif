@@ -1,0 +1,11 @@
+meyers dif algorithm implementations
+
+compile with:
+
+    g++ main.cc dif.cc -Wall -Wno-sign-compare -Og -g -std=c++17 -o dif
+
+compile test with:
+
+    g++ dif_test.cc -Wall -Wno-sign-compare -Og -g -std=c++17 -o test
+
+
