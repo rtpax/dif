@@ -3,6 +3,9 @@
 
 #include <unordered_set>
 #include <stdexcept>
+#include <string>
+#include <iostream>
+#include <sstream>
 
 struct dif_point {
 	int original_loc;
@@ -38,52 +41,54 @@ struct dif_hist {
 	               //something other than insertions is done
 };
 
-static dif finalize_dif(const dif_hist& path,
-		const std::string& original,
-		const std::string& final) {
+template<class T>
+static dif<T> finalize_dif(const dif_hist& path,
+		const T& original,
+		const T& final) {
 	dif_point dp;
 	int i = 0;
-	dif out;
-	dif_segment ds;
+	dif<T> out;
+	dif_segment<T> segment;
 
-	auto dif_append = [&](dif_segment::dif_segment_t type, char c){
-		if(ds.s != "" && ds.type != type) {
-			out.ds.push_back(ds);
-			ds.s = "";
+	auto dif_append = [&](typename dif_segment<T>::dif_segment_t type, typename T::value_type c){
+		if(!segment.s.empty() && segment.type != type) {
+			out.ds.push_back(segment);
+			segment.s.clear();
 		}
-		ds.type = type;
-		ds.s += c;
+		segment.type = type;
+		segment.s.push_back(c);
 	};
 
 	while(dp.original_loc < original.size() ||
 			dp.final_loc < final.size()) {
-		if(original[dp.original_loc] == final[dp.final_loc]) {
-			dif_append(dif_segment::preserved, final[dp.final_loc]);
+		if(dp.original_loc < original.size() && dp.final_loc < final.size() &&
+				original[dp.original_loc] == final[dp.final_loc]) {
+			dif_append(dif_segment<T>::preserved, final[dp.final_loc]);
 			++dp.original_loc;
 			++dp.final_loc;
 		} else if(path.instructions[i] == dif_hist::ins) {
-			dif_append(dif_segment::insertion, final[dp.final_loc]);
+			dif_append(dif_segment<T>::insertion, final[dp.final_loc]);
 			++dp.final_loc;
 			++i;
 		} else {//del
-			dif_append(dif_segment::deletion, original[dp.original_loc]);
+			dif_append(dif_segment<T>::deletion, original[dp.original_loc]);
 			++dp.original_loc;
 			++i;
 		}
 	}
-	if(ds.s.size() > 0)
-		out.ds.push_back(ds);
+	if(segment.s.size() > 0)
+		out.ds.push_back(segment);
 	return out;
 }
 
 static std::vector<const dif_hist*> paths_at_end(
 		const std::vector<dif_hist>& paths,
-		const std::string& original,
-		const std::string& final) {
+		int original_size,
+		int final_size) {
 	std::vector<const dif_hist*> out;
 	for(const dif_hist& path : paths) {
-		if(path.current.original_loc == original.size() &&
-				path.current.final_loc == final.size())
+		if(path.current.original_loc == original_size &&
+				path.current.final_loc == final_size)
 		out.push_back(&path);
 	}
 	return out;
@@ -95,10 +100,11 @@ static bool occurs_in(
 	return past.find(point) != past.cend();
 }
 
+template<class T>
 static dif_hist& dif_follow_preservation(
 		dif_hist& path,
-		const std::string& original,
-		const std::string& final) {
+		const T& original,
+		const T& final) {
 	while(path.current.original_loc < original.size() &&
 			path.current.final_loc < final.size() &&
 			original[path.current.original_loc] ==
@@ -110,20 +116,22 @@ static dif_hist& dif_follow_preservation(
 	return path;
 }
 
+template<class T>
 static dif_hist& dif_ins(
 		dif_hist& path,
-		const std::string& original,
-		const std::string& final) {
+		const T& original,
+		const T& final) {
 	path.instructions.push_back(dif_hist::ins);
 	path.current.final_loc += 1;
 	path.last_ins = true;
 	return dif_follow_preservation(path,original,final);
 }
 
+template<class T>
 static dif_hist& dif_del(
 		dif_hist& path,
-		const std::string& original,
-		const std::string& final) {
+		const T& original,
+		const T& final) {
 	path.instructions.push_back(dif_hist::del);
 	path.current.original_loc += 1;
 	path.last_ins = false;
@@ -131,16 +139,16 @@ static dif_hist& dif_del(
 }
 
 
-
-dif calc_dif(const std::string& original, const std::string& final) {
+template<class T>
+dif<T> calc_dif(const T& original, const T& final) {
 	std::vector<dif_hist> paths;
 	std::vector<dif_hist> new_paths;
 	std::vector<const dif_hist*> end_paths;
 	{
-		dif_hist tmp;
+		dif_hist tmp{{},{0,0},0};
 		paths.push_back(dif_follow_preservation(tmp,original,final));
 	}
-	end_paths = paths_at_end(paths,original,final);
+	end_paths = paths_at_end(paths,original.size(),final.size());
 
 	//since points are inserted right away, prevent further insertions
 	//even at the same level. favors paths that delete first.
@@ -176,36 +184,127 @@ dif calc_dif(const std::string& original, const std::string& final) {
 		paths.clear();
 		paths = std::move(new_paths);
 		new_paths.clear();
-		end_paths = paths_at_end(paths,original,final);
+		end_paths = paths_at_end(paths,original.size(),final.size());
 	}
 	//size of end_paths should always be 1
 	return finalize_dif(*end_paths.front(),original,final);
 }
 
+static bool show_line_info = false;
+
+void dif_ostream_show_line_info() {
+	show_line_info = true;
+}
+void dif_ostream_hide_line_info() {
+	show_line_info = false;
+}
+
+static bool show_color = true;
+
+void dif_ostream_show_color() {
+	show_color = true;
+}
+void dif_ostream_hide_color() {
+	show_color = false;
+}
+
+bool dif_ostream_has_line_info() {
+	return show_line_info;
+}
+
+bool dif_ostream_has_color() {
+	return show_color;
+}
+
 //  preserved [default]
-//# deletion  [red]
+//~ deletion  [red]
 //> insertion [green]
 //% modified  [blue]
 
-
-std::ostream& operator<<(std::ostream& os, const dif& d) {
+template<class T>
+std::ostream& operator<<(std::ostream& os, 
+		const dif<T>& d) {
 	Color::Modifier red(Color::FG_RED);
 	Color::Modifier grn(Color::FG_GREEN);
+	Color::Modifier blu(Color::FG_BLUE);
 	Color::Modifier def(Color::FG_DEFAULT);
+	Color::Modifier no_color(Color::FG_PRESERVE);
+	if(!show_color) {
+		red = grn = blu = def = no_color;
+	}
 
-	for(const dif_segment& ds : d.ds) {
-		switch(ds.type) {
-		case dif_segment::deletion:
-		  os << red << ds.s;
+	if (d.ds.empty())
+		return os;
+	typename dif_segment<T>::dif_segment_t line_type = dif_segment<T>::none;
+	std::ostringstream line;
+
+	auto flush_line = [&](){
+		switch(line_type) {
+		case dif_segment<T>::deletion:
+			os << red << "~ " << line.str() << def << "\n";
 			break;
-		case dif_segment::insertion:
-		  os << grn << ds.s;
+		case dif_segment<T>::insertion:
+			os << grn << "> " << line.str() << def << "\n";
 			break;
-		case dif_segment::preserved:
+		case dif_segment<T>::preserved:
+			os << def << "  " << line.str() << def << "\n";
+			break;
+		case dif_segment<T>::modified:
+			os << blu << "% " << line.str() << def << "\n";
+			break;
 		default:
-			os << def << ds.s;
+			os << "error: " << line.str() << def << "\n";
+		}
+		line.str("");
+	};
+
+	for(const dif_segment<T>& ds : d.ds) {
+		std::string str;
+		for(auto&& s : ds.s)
+			str += s; //convert string or char to string
+		std::istringstream iss(str);
+		std::string partial_line;
+		bool first_line = true;
+		while(std::getline(iss, partial_line)) {
+			if(line_type == dif_segment<T>::none || line_type == ds.type) {
+				line_type = ds.type;
+			} else {
+				line_type = dif_segment<T>::modified;
+			}
+			if(first_line) {
+				first_line = false;
+			} else {
+				flush_line();
+				if(partial_line.empty()) {
+					line_type = dif_segment<T>::none;
+					continue;
+				} else {
+					line_type = ds.type;
+				}
+			}
+			switch(ds.type) {
+			case dif_segment<T>::deletion:
+				line << red << partial_line;
+				break;
+			case dif_segment<T>::insertion:
+				line << grn << partial_line;
+				break;
+			case dif_segment<T>::preserved:
+			default:
+				line << def << partial_line;
+			}
 		}
 	}
-  os << def;
+	if(!line.str().empty()) {
+		flush_line();
+	}
+  	os << def;
 	return os;
 }
+
+template dif<std::string> calc_dif<std::string>(const std::string&, const std::string&);
+template dif<std::vector<std::string>> calc_dif<std::vector<std::string>>(const std::vector<std::string>&, const std::vector<std::string>&);
+template std::ostream& operator<<(std::ostream& os, const dif<std::string>& d);
+template std::ostream& operator<<(std::ostream& os, const dif<std::vector<std::string>>& d);
+
+

@@ -1,20 +1,33 @@
-#include <string>
 #include <vector>
 #include <ostream>
 
+template<class T>
 struct dif_segment {
 	enum dif_segment_t {
 	  insertion,
 	  deletion,
-	  preserved
+	  preserved,
+	  modified,
+	  none
 	} type;
-	std::string s;
+	T s;
 };
 
+template<class T>
 struct dif {
-	std::vector<dif_segment> ds;
+	std::vector<dif_segment<T>> ds;
 };
 
-dif calc_dif(const std::string& orginal, const std::string& final);
+template<class T>
+dif<T> calc_dif(const T& orginal, const T& final);
 
-std::ostream& operator<<(std::ostream&, const dif& d);
+void dif_ostream_show_line_info();
+void dif_ostream_hide_line_info();
+bool dif_ostream_has_line_info();
+void dif_ostream_show_color();
+void dif_ostream_hide_color();
+bool dif_ostream_has_color();
+
+template<class T>
+std::ostream& operator<<(std::ostream&, const dif<T>& d);
+
