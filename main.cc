@@ -26,16 +26,40 @@ enum difsource {
 	SRCFILE, COMMANDLINE
 };
 
+std::vector<std::string> get_args(int argc, char**argv) {
+	std::vector<std::string> out;
+	bool no_switch = false;
+	for(int i = 1; i < argc; ++i) {
+		std::string str = argv[i];
+		if (str == "--")
+			no_switch = true;
+		if(str.size() >= 2 && str[0] == '-') {
+			if(str[1] == '-' || no_switch) {
+				out.push_back(str);
+			} else {
+				for(int j = 1; j < str.size(); ++j) {
+					out.push_back(std::string("-") + str[j]);
+				}
+			}
+		} else {
+			out.push_back(str);
+		}
+	}
+	return out;
+}
+
 int main(int argc, char ** argv) {
 	//defaults
 	diftype type = TOKEN;
 	difsource source = SRCFILE;
-	int first_arg_index = argc;
 	dif_ostream_hide_line_info();
 	dif_ostream_show_color();
 
-	for(int i = 1; i < argc; ++i) {
-		if(matches(argv[i], "-h", "--help")) {
+	std::vector<std::string> args = get_args(argc,argv);
+	int first_arg_index = args.size();
+
+	for(int i = 0; i < args.size(); ++i) {
+		if(matches(args[i], "-h", "--help")) {
 			std::cout << 
 			"dif file comparison tool\n\n"
 			"  -c,--character     compute dif by character\n"
@@ -48,27 +72,32 @@ int main(int argc, char ** argv) {
 			"  -C,--color         print with color (default)\n"
 			"  --no-color         print without color\n"
 			"                     forces --line-info and --line\n"
+			"  --                 do not interpret further arguments as switches\n"
 			"  -h,--help          print this help message\n"
 			"\n";
 			return 0;
-		} else if (matches(argv[i], "-c", "--character")) {
+		} else if (matches(args[i], "-c", "--character")) {
 			type = CHARACTER;
-		} else if (matches(argv[i], "-t", "--token")) {
+		} else if (matches(args[i], "-t", "--token")) {
 			type = TOKEN;
-		} else if (matches(argv[i], "-l", "--line")) {
+		} else if (matches(args[i], "-l", "--line")) {
 			type = LINE;
-		} else if (matches(argv[i], "-s", "--command-line")) {
+		} else if (matches(args[i], "-s", "--command-line")) {
 			source = COMMANDLINE;
-		} else if (matches(argv[i], "-f", "--file")) {
+		} else if (matches(args[i], "-f", "--file")) {
 			source = SRCFILE;
-		} else if (matches(argv[i], "-L", "--line-info")) {
+		} else if (matches(args[i], "-L", "--line-info")) {
 			dif_ostream_show_line_info();
-		} else if (matches(argv[i], "--no-line-info")) {
+		} else if (matches(args[i], "--no-line-info")) {
 			dif_ostream_hide_line_info();
-		} else if (matches(argv[i], "-C", "--color")) {
+		} else if (matches(args[i], "-C", "--color")) {
 			dif_ostream_show_color();
-		} else if (matches(argv[i], "--no-color")) {
+		} else if (matches(args[i], "--no-color")) {
 			dif_ostream_hide_color();
+		} else if (matches(args[i], "--")) {
+			first_arg_index = i + 1;
+		} else if (args[i].size() > 0 && args[i][0] == '-'){
+			std::cerr << "warning: ignoring unrecognized option " << args[i] << "\n";
 		} else {
 			first_arg_index = i;
 			break;
@@ -85,25 +114,25 @@ int main(int argc, char ** argv) {
 	std::istream* src2 = nullptr;
 
 	try {
-		if(argc - first_arg_index < 2) {
+		if(args.size() - first_arg_index < 2) {
 			std::cerr << "error: too few arguments\n";
 			return 1;
 		} else  {
-			if(argc - first_arg_index > 2) {
-				std::cout << "warning: extra arguments ignored\n";
+			if(args.size() - first_arg_index > 2) {
+				std::cerr << "warning: extra arguments ignored\n";
 			}
 			if(source == SRCFILE) {
-				src1 = new std::ifstream(argv[first_arg_index],std::ios_base::in);
+				src1 = new std::ifstream(args[first_arg_index],std::ios_base::in);
 				if (!*src1)
 						throw std::system_error(errno, std::system_category(), 
-								std::string("failed to open ")+argv[first_arg_index]);
-				src2 = new std::ifstream(argv[first_arg_index + 1],std::ios_base::in);
+								std::string("failed to open ")+args[first_arg_index]);
+				src2 = new std::ifstream(args[first_arg_index + 1],std::ios_base::in);
 				if (!*src2)
 						throw std::system_error(errno, std::system_category(), 
-								std::string("failed to open ")+argv[first_arg_index + 1]);
+								std::string("failed to open ")+args[first_arg_index + 1]);
 			} else { //COMMANDLINE
-				src1 = new std::istringstream(argv[first_arg_index],std::ios_base::in);		
-				src2 = new std::istringstream(argv[first_arg_index + 1],std::ios_base::in);		
+				src1 = new std::istringstream(args[first_arg_index],std::ios_base::in);		
+				src2 = new std::istringstream(args[first_arg_index + 1],std::ios_base::in);		
 			}
 		}
 	} catch (std::system_error& e) {

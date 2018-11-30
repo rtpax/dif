@@ -229,6 +229,15 @@ std::ostream& operator<<(std::ostream& os,
 	Color::Modifier blu(Color::FG_BLUE);
 	Color::Modifier def(Color::FG_DEFAULT);
 	Color::Modifier no_color(Color::FG_PRESERVE);
+
+	std::string del_line, ins_line, prv_line, mod_line;
+	
+	if(show_line_info) {
+		del_line = "~ ";
+		ins_line = "> ";
+		prv_line = ": ";
+		mod_line = "% ";
+	}
 	if(!show_color) {
 		red = grn = blu = def = no_color;
 	}
@@ -241,16 +250,16 @@ std::ostream& operator<<(std::ostream& os,
 	auto flush_line = [&](){
 		switch(line_type) {
 		case dif_segment<T>::deletion:
-			os << red << "~ " << line.str() << def << "\n";
+			os << red << del_line << line.str() << def << "\n";
 			break;
 		case dif_segment<T>::insertion:
-			os << grn << "> " << line.str() << def << "\n";
+			os << grn << ins_line << line.str() << def << "\n";
 			break;
 		case dif_segment<T>::preserved:
-			os << def << "  " << line.str() << def << "\n";
+			os << def << prv_line << line.str() << def << "\n";
 			break;
 		case dif_segment<T>::modified:
-			os << blu << "% " << line.str() << def << "\n";
+			os << blu << mod_line << line.str() << def << "\n";
 			break;
 		default:
 			os << "error: " << line.str() << def << "\n";
@@ -262,6 +271,7 @@ std::ostream& operator<<(std::ostream& os,
 		std::string str;
 		for(auto&& s : ds.s)
 			str += s; //convert string or char to string
+		str += "\n";//getline does not read empty lines after newlines
 		std::istringstream iss(str);
 		std::string partial_line;
 		bool first_line = true;

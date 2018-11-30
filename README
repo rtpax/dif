@@ -1,11 +1,20 @@
-meyers dif algorithm implementations
+dif file comparison tool
 
-compile with:
+  -c,--character     compute dif by character
+  -t,--token         compute dif by token (default)
+  -l,--line          compute dif by line
+  -s,--command-line  read contents from command line
+  -f,--file          read contents from input files (default)
+  -L,--line-info     print whether each line was modified and how
+  --no-line-info     do not print line info (default)
+  -C,--color         print with color (default)
+  --no-color         print without color
+                     forces --line-info and --line
+  --                 do not interpret further arguments as switches
+  -h,--help          print this help message
 
-    g++ main.cc dif.cc -Wall -Wno-sign-compare -Og -g -std=c++17 -o dif
-
-compile test with:
-
-    g++ dif_test.cc -Wall -Wno-sign-compare -Og -g -std=c++17 -o test
 
 
+Uses Meyer's diff algorithm.
+
+Color support only for the linux terminal
