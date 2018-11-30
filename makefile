@@ -4,8 +4,9 @@ CXXFLAGS := -std=c++17 -O2 -g -Wall -Wno-sign-compare
 CPPFLAGS :=
 LD_FLAGS :=
 
-SRCS := dif.cc streamsplitter.cc main.cc
+SRCS := dif.cc streamsplitter.cc dif_ostream.cc main.cc
 OBJS := $(SRCS:.cc=.o)
+DEPS := $(SRCS:.cc=.o)
 
 all: dif
 
@@ -19,9 +20,11 @@ test: dif_test.o
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS) $< -MT $@ > $*.d
 
+-include $(DEPS) dif_test.d
 
 clean:
-	rm -rf $(OBJS) dif_test.o
+	rm -rf $(OBJS) dif_test.o 
+	rm -rf $(DEPS) dif_test.d
 
 distclean: clean
-	rm -rf dif
+	rm -rf dif test
