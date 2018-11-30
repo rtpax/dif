@@ -4,7 +4,9 @@
 #include <unordered_set>
 #include <stdexcept>
 #include <string>
+
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 struct dif_point {
@@ -208,6 +210,24 @@ void dif_ostream_hide_color() {
 	show_color = false;
 }
 
+static bool only_modified = false;
+
+void dif_ostream_show_only_modified() {
+	only_modified = true;
+}
+void dif_ostream_show_all() {
+	only_modified = false;
+}
+
+static bool show_line_num = false;
+
+void dif_ostream_show_line_num() {
+	show_line_num = true;
+}
+void dif_ostream_hide_line_num() {
+	show_line_num = false;
+}
+
 bool dif_ostream_has_line_info() {
 	return show_line_info;
 }
@@ -216,7 +236,16 @@ bool dif_ostream_has_color() {
 	return show_color;
 }
 
-//  preserved [default]
+bool dif_ostream_only_modified() {
+	return only_modified;
+}
+
+bool dif_ostream_has_line_num() {
+	return show_line_num;
+}
+
+
+//: preserved [default]
 //~ deletion  [red]
 //> insertion [green]
 //% modified  [blue]
@@ -247,18 +276,37 @@ std::ostream& operator<<(std::ostream& os,
 	typename dif_segment<T>::dif_segment_t line_type = dif_segment<T>::none;
 	std::ostringstream line;
 
+	int original_line_num = 0;
+	int final_line_num = 0;
+
 	auto flush_line = [&](){
 		switch(line_type) {
 		case dif_segment<T>::deletion:
+			++original_line_num;
+			if(show_line_num)
+				os << red << std::setw(4) << original_line_num;
 			os << red << del_line << line.str() << def << "\n";
 			break;
 		case dif_segment<T>::insertion:
+			++final_line_num;
+			if(show_line_num)
+				os << grn << std::setw(4) << final_line_num;
 			os << grn << ins_line << line.str() << def << "\n";
 			break;
 		case dif_segment<T>::preserved:
-			os << def << prv_line << line.str() << def << "\n";
+			++original_line_num;
+			++final_line_num;
+			if(!only_modified) {
+				if(show_line_num)
+					os << def << std::setw(4) << final_line_num;
+				os << def << prv_line << line.str() << def << "\n";
+			}
 			break;
 		case dif_segment<T>::modified:
+			++original_line_num;
+			++final_line_num;
+			if(show_line_num)
+				os << blu << std::setw(4) << final_line_num;
 			os << blu << mod_line << line.str() << def << "\n";
 			break;
 		default:
@@ -276,9 +324,9 @@ std::ostream& operator<<(std::ostream& os,
 		std::string partial_line;
 		bool first_line = true;
 		while(std::getline(iss, partial_line)) {
-			if(line_type == dif_segment<T>::none || line_type == ds.type) {
+			if(line_type == dif_segment<T>::none) {
 				line_type = ds.type;
-			} else {
+			} else if (line_type != ds.type && !partial_line.empty()) {
 				line_type = dif_segment<T>::modified;
 			}
 			if(first_line) {
@@ -308,7 +356,6 @@ std::ostream& operator<<(std::ostream& os,
 	if(!line.str().empty()) {
 		flush_line();
 	}
-  	os << def;
 	return os;
 }
 

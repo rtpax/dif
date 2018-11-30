@@ -6,7 +6,10 @@ enum chartype {
 };
 
 bool is_word_char(char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '$'; 
+    return (c >= 'a' && c <= 'z') || 
+            (c >= 'A' && c <= 'Z') || 
+            (c >= '0' && c <= '9') ||
+            c == '_' || c == '$'; 
 }
 
 bool is_whitespace(char c) {
@@ -46,7 +49,7 @@ std::vector<std::string> split_by_token(std::istream& file) {
         line += "\n";
         for(char c : line) {
             chartype type = get_chartype(c);
-            if((type != lasttype || type == other) && !buffer.empty()) {
+            if((type != lasttype || type == white) && !buffer.empty()) {
                 out.push_back(buffer);
                 buffer.clear();
             }

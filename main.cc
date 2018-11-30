@@ -54,6 +54,8 @@ int main(int argc, char ** argv) {
 	difsource source = SRCFILE;
 	dif_ostream_hide_line_info();
 	dif_ostream_show_color();
+	dif_ostream_show_all();
+	dif_ostream_hide_line_num();
 
 	std::vector<std::string> args = get_args(argc,argv);
 	int first_arg_index = args.size();
@@ -62,18 +64,22 @@ int main(int argc, char ** argv) {
 		if(matches(args[i], "-h", "--help")) {
 			std::cout << 
 			"dif file comparison tool\n\n"
-			"  -c,--character     compute dif by character\n"
-			"  -t,--token         compute dif by token (default)\n"
-			"  -l,--line          compute dif by line\n"
-			"  -s,--command-line  read contents from command line\n"
-			"  -f,--file          read contents from input files (default)\n"
-			"  -L,--line-info     print whether each line was modified and how\n"
-			"  --no-line-info     do not print line info (default)\n"
-			"  -C,--color         print with color (default)\n"
-			"  --no-color         print without color\n"
-			"                     forces --line-info and --line\n"
-			"  --                 do not interpret further arguments as switches\n"
-			"  -h,--help          print this help message\n"
+			"  -c,--character      compute dif by character\n"
+			"  -t,--token          compute dif by token (default)\n"
+			"  -l,--line           compute dif by line\n"
+			"  -s,--command-line   read contents from command line\n"
+			"  -f,--file           read contents from input files (default)\n"
+			"  -m,--only-modified  only show lines that were modified\n"
+			"  --no-only-modified  show all lines (default)\n"
+			"  -n,--line-num       show line numbers\n"
+			"  --no-line-num       do not show line numbers (default)\n"
+			"  -L,--line-info      print whether each line was modified and how\n"
+			"  --no-line-info      do not print line info (default)\n"
+			"  -C,--color          print with color (default)\n"
+			"  --no-color          print without color. forces --line-info.\n"
+			"                      use with --line is recommended.\n"
+			"  --                  do not interpret further arguments as switches\n"
+			"  -h,--help           print this help message\n"
 			"\n";
 			return 0;
 		} else if (matches(args[i], "-c", "--character")) {
@@ -94,6 +100,14 @@ int main(int argc, char ** argv) {
 			dif_ostream_show_color();
 		} else if (matches(args[i], "--no-color")) {
 			dif_ostream_hide_color();
+		} else if (matches(args[i], "-m", "--only-modified")) {
+			dif_ostream_show_only_modified();
+		} else if (matches(args[i], "--no-only-modified")) {
+			dif_ostream_show_all();
+		} else if (matches(args[i], "-n", "--line-num")) {
+			dif_ostream_show_line_num();
+		} else if (matches(args[i], "--no-line-num")) {
+			dif_ostream_hide_line_num();
 		} else if (matches(args[i], "--")) {
 			first_arg_index = i + 1;
 		} else if (args[i].size() > 0 && args[i][0] == '-'){
@@ -104,10 +118,9 @@ int main(int argc, char ** argv) {
 		}
 	}
 
-	//if color is missing these are needed to make sense of the dif
+	//if color is missing this is needed to make sense of the dif
 	if(!dif_ostream_has_color()) {
 		dif_ostream_show_line_info();
-		type = LINE;
 	}
 
 	std::istream* src1 = nullptr;
