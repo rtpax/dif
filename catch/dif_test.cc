@@ -1,6 +1,5 @@
-#define CATCH_CONFIG_MAIN
-
 #include "dif.cc" //cc since I am testing the static functions
+
 #include <catch.hpp>
 
 
@@ -121,3 +120,4 @@ TEST_CASE("paths_at_end", "abcd -> abd: only 4,3 works") {
 
     REQUIRE(end_paths.front()->current == dif_point{4,3});
 }
+

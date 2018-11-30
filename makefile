@@ -1,20 +1,31 @@
-CXX := g++-7
+CXX := g++
+
+BUILD_DIR := build
 
 CXXFLAGS := -std=c++17 -O2 -g -Wall -Wno-sign-compare
 CPPFLAGS :=
 LD_FLAGS :=
 
+
+T_SRCS := main_test.cc
+T_OBJS := $(T_SRCS:.cc=.o)
+T_DEPS := $(T_DEPS:.cc=.d)
+
 SRCS := dif.cc streamsplitter.cc dif_ostream.cc main.cc
 OBJS := $(SRCS:.cc=.o)
 DEPS := $(SRCS:.cc=.o)
 
-all: dif
+
+all: build dif
+
+build:
+	mkdir build
 
 dif: $(OBJS)
-	$(CXX) $(OBJS) $(CXXFLAGS) $(LD_FLAGS) -o dif
+	$(CXX) $(OBJS) $(CXXFLAGS) $(LD_FLAGS) -o $(BUILD_DIR)/dif
 
-test: dif_test.o
-	$(CXX) dif_test.o $(CXXFLAGS) $(LD_FLAGS) -o test
+catch: build $(T_OBJS)
+	$(CXX) $(T_OBJS) $(CXXFLAGS) $(LD_FLAGS) -o $(BUILD_DIR)/test
 
 %.o: %.cc
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
@@ -23,8 +34,8 @@ test: dif_test.o
 -include $(DEPS) dif_test.d
 
 clean:
-	rm -rf $(OBJS) dif_test.o 
-	rm -rf $(DEPS) dif_test.d
+	rm -rf $(OBJS) $(T_OBJS)
+	rm -rf $(DEPS) $(T_DEPS)
 
 distclean: clean
-	rm -rf dif test
+	rm -rf $(BUILD_DIR)/dif $(BUILD_DIR)/test
