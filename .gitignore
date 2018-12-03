@@ -1,6 +1,11 @@
-build
 .vscode
+debug
+profile
+release
 sandbox
 
 *.o
 *.d
+gmon.out
+*.prof
+core

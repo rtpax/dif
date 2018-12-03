@@ -106,7 +106,7 @@ std::ostream& operator<<(std::ostream& os,
 	segment_type line_type = none;
 	std::ostringstream line;
 
-	int final_line_num = 0;
+	int final_line_num = 1;
 
 	auto flush_line = [&](){
 		switch(line_type) {
@@ -117,27 +117,27 @@ std::ostream& operator<<(std::ostream& os,
 			os << del_line << line.str() << def << "\n";
 			break;
 		case insertion:
-			++final_line_num;
 			os << grn;
             if(show_line_num)
 				os << std::setw(4) << final_line_num;
 			os << ins_line << line.str() << def << "\n";
+			++final_line_num;
 			break;
 		case preserved:
-			++final_line_num;
 			if(!only_modified) {
 				os << def;
                 if(show_line_num)
 					os << std::setw(4) << final_line_num;
 				os << prv_line << line.str() << def << "\n";
 			}
+			++final_line_num;
 			break;
 		case modified:
-			++final_line_num;
             os << blu;
 			if(show_line_num)
 				os << std::setw(4) << final_line_num;
 			os << mod_line << line.str() << def << "\n";
+			++final_line_num;
 			break;
 		default:
 			os << "error: " << line.str() << def << "\n";
