@@ -4,6 +4,15 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef __GNUC__
+#define VARIABLE_IS_NOT_USED __attribute__ ((unused))
+#else
+#define VARIABLE_IS_NOT_USED
+#endif
+
+
+namespace cmp {
+
 struct dif_point {
 	int original_loc;
 	int final_loc;
@@ -18,7 +27,8 @@ struct dif_point {
 	}
 };
 
-std::ostream& operator<<(std::ostream& os, dif_point dp) {
+VARIABLE_IS_NOT_USED
+static std::ostream& operator<<(std::ostream& os, dif_point dp) {
 	return os << "{" << dp.original_loc << "," << dp.final_loc << "}";
 }
 
@@ -47,7 +57,7 @@ static dif<T> finalize_dif(const dif_hist& path,
 	dif<T> out;
 	dif_segment<T> segment;
 
-	auto dif_append = [&](typename dif_segment<T>::dif_segment_t type, typename T::value_type c){
+	auto dif_append = [&](segment_type type, typename T::value_type c){
 		if(!segment.s.empty() && segment.type != type) {
 			out.ds.push_back(segment);
 			segment.s.clear();
@@ -60,15 +70,15 @@ static dif<T> finalize_dif(const dif_hist& path,
 			dp.final_loc < final.size()) {
 		if(dp.original_loc < original.size() && dp.final_loc < final.size() &&
 				original[dp.original_loc] == final[dp.final_loc]) {
-			dif_append(dif_segment<T>::preserved, final[dp.final_loc]);
+			dif_append(preserved, final[dp.final_loc]);
 			++dp.original_loc;
 			++dp.final_loc;
 		} else if(path.instructions[i] == dif_hist::ins) {
-			dif_append(dif_segment<T>::insertion, final[dp.final_loc]);
+			dif_append(insertion, final[dp.final_loc]);
 			++dp.final_loc;
 			++i;
 		} else {//del
-			dif_append(dif_segment<T>::deletion, original[dp.original_loc]);
+			dif_append(deletion, original[dp.original_loc]);
 			++dp.original_loc;
 			++i;
 		}
@@ -192,3 +202,4 @@ template dif<std::string> calc_dif<std::string>(const std::string&, const std::s
 template dif<std::vector<std::string>> calc_dif<std::vector<std::string>>(const std::vector<std::string>&, const std::vector<std::string>&);
 
 
+}

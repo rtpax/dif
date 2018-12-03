@@ -1,5 +1,6 @@
 #include "streamsplitter.hh"
 
+namespace cmp {
 
 enum chartype {
     word,white,other
@@ -70,3 +71,4 @@ std::string split_by_character(std::istream& file) {
 }
 
 
+}

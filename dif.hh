@@ -4,15 +4,19 @@
 #include <vector>
 #include "dif_ostream.hh"
 
+namespace cmp {
+
+enum segment_type {
+	insertion,
+	deletion,
+	preserved,
+	modified,
+	none	
+};
+
 template<class T>
 struct dif_segment {
-	enum dif_segment_t {
-	  insertion,
-	  deletion,
-	  preserved,
-	  modified,
-	  none
-	} type;
+	segment_type type;
 	T s;
 };
 
@@ -22,8 +26,12 @@ struct dif {
 };
 
 
+
 template<class T>
 dif<T> calc_dif(const T& orginal, const T& final);
+
+}
+
 
 
 

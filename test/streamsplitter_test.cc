@@ -2,6 +2,8 @@
 #include <streamsplitter.cc>
 #include <sstream>
 
+using namespace cmp;
+
 TEST_CASE("split_by_line", "read from istringstream") {
     std::istringstream iss("a\nb\nc\nd\n", std::ios_base::in);
 

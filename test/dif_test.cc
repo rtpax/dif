@@ -2,6 +2,7 @@
 
 #include <catch.hpp>
 
+using namespace cmp;
 
 TEST_CASE("finalize_dif - preserve", "no changes") {
     dif_hist dh;//empty for no changes
@@ -10,7 +11,7 @@ TEST_CASE("finalize_dif - preserve", "no changes") {
     CHECK(d.ds.size() == 1);
     auto it = d.ds.begin();
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "abcd");
 }
 
@@ -21,15 +22,15 @@ TEST_CASE("finalize_dif - delete", "deletioin, no insetion") {
     CHECK(d.ds.size() == 3);
     auto it = d.ds.begin();
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "ab");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::deletion);
+    CHECK(it->type == deletion);
     CHECK(it->s == "c");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "d");
 }
 
@@ -40,15 +41,15 @@ TEST_CASE("finalize_dif - insert", "insertion, no deletion") {
     CHECK(d.ds.size() == 3);
     auto it = d.ds.begin();
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "a");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::insertion);
+    CHECK(it->type == insertion);
     CHECK(it->s == "X");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "bcd");
 
 }
@@ -60,23 +61,23 @@ TEST_CASE("finalize_dif - modify", "insertion and deletion") {
     CHECK(d.ds.size() == 5);
     auto it = d.ds.begin();
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "a");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::insertion);
+    CHECK(it->type == insertion);
     CHECK(it->s == "X");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "b");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::deletion);
+    CHECK(it->type == deletion);
     CHECK(it->s == "c");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "d");
 }
 
@@ -87,19 +88,19 @@ TEST_CASE("finalize_dif - replace", "abcdefg -> abcdXfg.") {
     CHECK(d.ds.size() == 4);
     auto it = d.ds.begin();
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "abcd");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::deletion);
+    CHECK(it->type == deletion);
     CHECK(it->s == "e");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::insertion);
+    CHECK(it->type == insertion);
     CHECK(it->s == "X");
     ++it;
 
-    CHECK(it->type == dif_segment<std::string>::preserved);
+    CHECK(it->type == preserved);
     CHECK(it->s == "fg");
 }
 

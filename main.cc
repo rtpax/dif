@@ -49,6 +49,8 @@ std::vector<std::string> get_args(int argc, char**argv) {
 }
 
 int main(int argc, char ** argv) {
+	using namespace cmp;
+
 	//defaults
 	diftype type = TOKEN;
 	difsource source = SRCFILE;

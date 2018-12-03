@@ -1,6 +1,8 @@
 #ifndef DIF_OSTREAM_HH
 #define DIF_OSTREAM_HH
 #include <ostream>
+
+namespace cmp {
 template<class T>
 struct dif;
 
@@ -22,9 +24,10 @@ void dif_ostream_show_line_num();
 void dif_ostream_hide_line_num();
 bool dif_ostream_has_line_num();
 
+}
 
 template<class T>
-std::ostream& operator<<(std::ostream&, const dif<T>& d);
+std::ostream& operator<<(std::ostream&, const cmp::dif<T>& d);
 
 
 #endif

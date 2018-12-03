@@ -1,6 +1,7 @@
 CXX := g++
 
 BUILD_DIR := build
+INSTALL_DIR := ~/bin
 
 CXXFLAGS := -std=c++17 -O2 -g -Wall -Wno-sign-compare
 CPPFLAGS :=
@@ -15,10 +16,16 @@ SRCS := dif.cc streamsplitter.cc dif_ostream.cc main.cc
 OBJS := $(SRCS:%.cc=$(BUILD_DIR)/%.o)
 DEPS := $(SRCS:%.cc=$(BUILD_DIR)/%.d)
 
+.PHONY: clean distclean all dif test
 
-all: $(BUILD_DIR) $(BUILD_DIR)/dif
+dif: $(BUILD_DIR) $(BUILD_DIR)/dif
 
 test: $(BUILD_DIR) $(BUILD_DIR)/test
+
+all: dif test
+
+install:
+	cp $(BUILD_DIR)/dif $(INSTALL_DIR)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
