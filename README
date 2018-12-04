@@ -5,6 +5,8 @@ dif file comparison tool
   -l,--line             compute dif by line
   -s,--command-line     read contents from command line
   -f,--file             read contents from input files (default)
+  --ignore-crlf         treat crlf as lf line endings (default)
+  --no-ignore-crlf      do not treat crlf as lf line endings
   -m,--only-modified    only show lines that were modified
   --no-only-modified    show all lines (default)
   -n,--line-num         show line numbers
@@ -12,9 +14,8 @@ dif file comparison tool
   -L,--line-info        print whether each line was modified and how
   --no-line-info        do not print line info (default)
   -C,--color,--fgcolor  print with foreground color (default)
-  --bg-color            print with background color. helpful for whitespace
-  --no-color            print without color. forces --line-info.
-                        use with --line is recommended.
+  --bg-color            print with background color; helpful for whitespace
+  --no-color            print without color; forces --line-info and --line
   --                    do not interpret further arguments as switches
   -h,--help             print this help message
 

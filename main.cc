@@ -58,6 +58,7 @@ int main(int argc, char ** argv) {
 	dif_ostream_show_color();
 	dif_ostream_show_all();
 	dif_ostream_hide_line_num();
+	bool ignore_crlf = true;
 
 	std::vector<std::string> args = get_args(argc,argv);
 	int first_arg_index = args.size();
@@ -71,6 +72,8 @@ int main(int argc, char ** argv) {
 			"  -l,--line             compute dif by line\n"
 			"  -s,--command-line     read contents from command line\n"
 			"  -f,--file             read contents from input files (default)\n"
+			"  --ignore-crlf         treat crlf as lf line endings (default)\n"
+			"  --no-ignore-crlf      do not treat crlf as lf line endings\n"
 			"  -m,--only-modified    only show lines that were modified\n"
 			"  --no-only-modified    show all lines (default)\n"
 			"  -n,--line-num         show line numbers\n"
@@ -78,9 +81,8 @@ int main(int argc, char ** argv) {
 			"  -L,--line-info        print whether each line was modified and how\n"
 			"  --no-line-info        do not print line info (default)\n"
 			"  -C,--color,--fgcolor  print with foreground color (default)\n"
-			"  --bg-color            print with background color. helpful for whitespace\n"
-			"  --no-color            print without color. forces --line-info.\n"
-			"                        use with --line is recommended.\n"
+			"  --bg-color            print with background color; helpful for whitespace\n"
+			"  --no-color            print without color; forces --line-info and --line\n"
 			"  --                    do not interpret further arguments as switches\n"
 			"  -h,--help             print this help message\n"
 			"\n";
@@ -91,6 +93,10 @@ int main(int argc, char ** argv) {
 			type = TOKEN;
 		} else if (matches(args[i], "-l", "--line")) {
 			type = LINE;
+		} else if (matches(args[i], "--ignore-crlf")) {
+			ignore_crlf = true;;
+		} else if (matches(args[i], "--no-ignore-crlf")) {
+			ignore_crlf = false;
 		} else if (matches(args[i], "-s", "--command-line")) {
 			source = COMMANDLINE;
 		} else if (matches(args[i], "-f", "--file")) {
@@ -126,6 +132,7 @@ int main(int argc, char ** argv) {
 	//if color is missing this is needed to make sense of the dif
 	if(!dif_ostream_has_color()) {
 		dif_ostream_show_line_info();
+		type = LINE;
 	}
 
 	std::istream* src1 = nullptr;
@@ -160,17 +167,20 @@ int main(int argc, char ** argv) {
 
 	switch(type) {
 	case CHARACTER: {
-		auto d = calc_dif(split_by_character(*src1),split_by_character(*src2));
+		auto d = calc_dif(split_by_character(*src1,ignore_crlf),
+				split_by_character(*src2,ignore_crlf));
 		std::cout << d << "\n";
 		return 0;
 	}
 	case TOKEN: {
-		auto d = calc_dif(split_by_token(*src1),split_by_token(*src2));
+		auto d = calc_dif(split_by_token(*src1,ignore_crlf),
+				split_by_token(*src2,ignore_crlf));
 		std::cout << d << "\n";
 		return 0;
 	}
 	case LINE: {
-		auto d = calc_dif(split_by_line(*src1),split_by_line(*src2));
+		auto d = calc_dif(split_by_line(*src1,ignore_crlf),
+				split_by_line(*src2,ignore_crlf));
 		std::cout << d << "\n";
 		return 0;
 	}

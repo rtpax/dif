@@ -26,20 +26,21 @@ chartype get_chartype(char c) {
         return other;
 }
 
-std::vector<std::string> split_by_line(std::istream& file) {
+std::vector<std::string> split_by_line(std::istream& file, bool ignore_crlf) {
     std::vector<std::string> out;
 
     std::string line;
 
     while(std::getline(file, line)) {
-        out.push_back(line + "\n");
-        //while \n this may not be the line ending used
-        //it will display the same
+        if(ignore_crlf && line.back() == '\r')
+            line.pop_back();
+        line += "\n";
+        out.push_back(line);
     }
     return out;
 }
 
-std::vector<std::string> split_by_token(std::istream& file) {
+std::vector<std::string> split_by_token(std::istream& file, bool ignore_crlf) {
     std::vector<std::string> out;
 
     std::string line;
@@ -47,6 +48,8 @@ std::vector<std::string> split_by_token(std::istream& file) {
     chartype lasttype = other;
 
     while(std::getline(file, line)) {
+        if(ignore_crlf && line.back() == '\r')
+            line.pop_back();
         line += "\n";
         for(char c : line) {
             chartype type = get_chartype(c);
@@ -63,10 +66,21 @@ std::vector<std::string> split_by_token(std::istream& file) {
     return out;
 }
 
-std::string split_by_character(std::istream& file) {
+std::string split_by_character(std::istream& file, bool ignore_crlf) {
     std::string out;
-    out.assign(std::istreambuf_iterator<char>(file),
-            std::istreambuf_iterator<char>());
+    char c;
+    if(file.get(c)) {
+        out.push_back(c);
+    } else {
+        return out;
+    }
+    while(file.get(c)) {
+        if(ignore_crlf && out.back() == '\r' && c == '\n') {
+            out.back() = c;           
+        } else {
+            out.push_back(c);
+        }
+    }
     return out;
 }
 

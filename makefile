@@ -42,7 +42,7 @@ SRCS := dif.cc streamsplitter.cc dif_ostream.cc main.cc
 OBJS := $(SRCS:%.cc=$(BUILD_DIR)/%.o)
 DEPS := $(SRCS:%.cc=$(BUILD_DIR)/%.d)
 
-.PHONY: clean distclean all dif test
+.PHONY: clean clean-objs clean-all all dif test install
 
 dif: $(BUILD_DIR) $(BUILD_DIR)/dif
 
@@ -50,16 +50,18 @@ test: $(BUILD_DIR) $(BUILD_DIR)/test
 
 all: dif test
 
-install:
+install: $(INSTALL_DIR)/dif 
+
+$(INSTALL_DIR)/dif: $(BUILD_DIR) $(BUILD_DIR)/dif
 	cp $(BUILD_DIR)/dif $(INSTALL_DIR)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
-$(BUILD_DIR)/dif: $(BUILD_DIR) $(OBJS)
+$(BUILD_DIR)/dif: $(OBJS)
 	$(CXX) $(OBJS) $(CXXFLAGS) $(LD_LIBS) -o $(BUILD_DIR)/dif
 
-$(BUILD_DIR)/test: $(BUILD_DIR) $(T_OBJS)
+$(BUILD_DIR)/test: $(T_OBJS)
 	$(CXX) $(T_OBJS) $(CXXFLAGS) $(LD_LIBS) -o $(BUILD_DIR)/test
 
 $(BUILD_DIR)/%.o: %.cc
