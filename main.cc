@@ -149,15 +149,17 @@ int main(int argc, char ** argv) {
 			if(source == SRCFILE) {
 				src1 = new std::ifstream(args[first_arg_index],std::ios_base::in);
 				if (!*src1)
-						throw std::system_error(errno, std::system_category(), 
-								std::string("failed to open ")+args[first_arg_index]);
+					throw std::system_error(errno, std::system_category(), 
+						std::string("failed to open ")+args[first_arg_index]);
 				src2 = new std::ifstream(args[first_arg_index + 1],std::ios_base::in);
 				if (!*src2)
-						throw std::system_error(errno, std::system_category(), 
-								std::string("failed to open ")+args[first_arg_index + 1]);
+					throw std::system_error(errno, std::system_category(), 
+						std::string("failed to open ")+args[first_arg_index + 1]);
 			} else { //COMMANDLINE
-				src1 = new std::istringstream(args[first_arg_index],std::ios_base::in);		
-				src2 = new std::istringstream(args[first_arg_index + 1],std::ios_base::in);		
+				src1 = new std::istringstream(
+						args[first_arg_index],std::ios_base::in);		
+				src2 = new std::istringstream(
+						args[first_arg_index + 1],std::ios_base::in);		
 			}
 		}
 	} catch (std::system_error& e) {

@@ -198,8 +198,10 @@ dif<T> calc_dif(const T& original, const T& final) {
 }
 
 
-template dif<std::string> calc_dif<std::string>(const std::string&, const std::string&);
-template dif<std::vector<std::string>> calc_dif<std::vector<std::string>>(const std::vector<std::string>&, const std::vector<std::string>&);
+template dif<std::string> calc_dif<std::string>(
+		const std::string&, const std::string&);
+template dif<std::vector<std::string>> calc_dif<std::vector<std::string>>(
+		const std::vector<std::string>&, const std::vector<std::string>&);
 
 
 }

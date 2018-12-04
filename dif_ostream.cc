@@ -190,5 +190,7 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 
-template std::ostream& operator<<(std::ostream& os, const cmp::dif<std::string>& d);
-template std::ostream& operator<<(std::ostream& os, const cmp::dif<std::vector<std::string>>& d);
+template std::ostream& operator<<(
+		std::ostream& os, const cmp::dif<std::string>& d);
+template std::ostream& operator<<(
+		std::ostream& os, const cmp::dif<std::vector<std::string>>& d);
